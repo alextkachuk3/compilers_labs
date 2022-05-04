@@ -51,10 +51,10 @@ ${LIBS}:
 	${CLASSDIR}/etc/link-object ${ASSN} $@
 
 ${TSRC} ${CSRC}:
-	-ln -s ${CLASSDIR}/src/PA${ASSN}/$@ $@
+	-ln -s ${CLASSDIR}/src/lab${ASSN}/$@ $@
 
 ${HSRC}:
-	-ln -s ${CLASSDIR}/include/PA${ASSN}/$@ $@
+	-ln -s ${CLASSDIR}/include/lab${ASSN}/$@ $@
 
 clean :
 	-rm -f ${OUTPUT} *.s core ${OBJS} lexer cool-lex.cc *~ parser cgen semant
