@@ -50,6 +50,11 @@ ASSIGN                      <-
 <MULTI_LINE_COMMENT>\n      { curr_lineno++; }
 <MULTI_LINE_COMMENT>"\*)"   { BEGIN 0; }
 
+"\*)"			{
+	strcpy(cool_yylval.error_msg, "Unmatched *)");
+	return (ERROR);
+}
+
 <SINGLE_LINE_COMMENT>.      {}
 <MULTI_LINE_COMMENT>.       {}
 
