@@ -207,6 +207,8 @@ f[aA][lL][sS][eE] {
   return ERROR;
 }
 
+[[:space:]]+
+
 [0-9]+  {
   cool_yylval.symbol = inttable.add_string(yytext);
   return (INT_CONST);
