@@ -171,7 +171,6 @@ f[aA][lL][sS][eE] {
         break;
       case 0:
         BEGIN(INITIAL);
-        printf(string_buf, "String contains escaped null character.");
         cool_yylval.error_msg = string_buf;
         return ERROR;
       default:
