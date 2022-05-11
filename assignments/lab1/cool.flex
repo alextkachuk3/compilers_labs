@@ -46,18 +46,24 @@ ASSIGN                      <-
   */
 
 "--"                        { BEGIN SINGLE_LINE_COMMENT; }
-"(*"                        { BEGIN MULTI_LINE_COMMENT; }
+"(*"                        {
+                              BEGIN MULTI_LINE_COMMENT;
+                              comment_nesting_counter++;
+                            }
 
 
 <SINGLE_LINE_COMMENT>\n     { BEGIN 0; curr_lineno++; }
 <MULTI_LINE_COMMENT>"*)"    {
-                              comment_nesting_counter--;
-                              if(comment_nesting_counter) BEGIN 0;
+                              comment_nesting_counter--;                              
+                              if(comment_nesting_counter == 0) {
+                                BEGIN (INITIAL);
+                              }                              
                             }
 <MULTI_LINE_COMMENT>"(*"    { comment_nesting_counter++; }
-<MULTI_LINE_COMMENT><<EOF>> { 
+<MULTI_LINE_COMMENT><<EOF>> {
 	                            strcpy(cool_yylval.error_msg, "EOF in comment");
-                              BEGIN 0; return (ERROR);
+                              BEGIN 0;
+                              return (ERROR);
                             }
 
 "*)" {
