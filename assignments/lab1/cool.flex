@@ -212,4 +212,9 @@ f[aA][lL][sS][eE] {
   return (OBJECTID);
 }
 
+.	{
+	strcpy(cool_yylval.error_msg, yytext); 
+	return (ERROR); 
+}
+
 %%
