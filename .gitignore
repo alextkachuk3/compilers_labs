@@ -32,3 +32,4 @@
 *.app
 assignments/lab1/cool-lex.cc
 assignments/lab1/lexer
+assignments/lab1/grading/
