@@ -48,12 +48,17 @@ ASSIGN                      <-
 "--"                        { BEGIN SINGLE_LINE_COMMENT; }
 "(*"                        { BEGIN MULTI_LINE_COMMENT; }
 
+
 <SINGLE_LINE_COMMENT>\n     { BEGIN 0; curr_lineno++; }
 <MULTI_LINE_COMMENT>"*)"    {
                               comment_nesting_counter--;
                               if(comment_nesting_counter) BEGIN 0;
                             }
 <MULTI_LINE_COMMENT>"(*"    { comment_nesting_counter++; }
+<MULTI_LINE_COMMENT><<EOF>> { 
+	                            strcpy(cool_yylval.error_msg, "EOF in comment");
+                              BEGIN 0; return (ERROR);
+                            }
 
 "*)" {
   strcpy(cool_yylval.error_msg, "Unmatched *)");
