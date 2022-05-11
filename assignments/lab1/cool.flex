@@ -1,12 +1,4 @@
-/*
- *  The scanner definition for COOL.
- */
-
-/*
- *  Stuff enclosed in %{ %} in the first section is copied verbatim to the
- *  output, so headers and global definitions are placed here to be visible
- * to the code in the file.  Don't remove anything that was here initially
- */
+%option noyywrap
 %{
 #include <cool-parse.h>
 #include <stringtab.h>
@@ -45,9 +37,12 @@ extern YYSTYPE cool_yylval;
 
 %}
 
+%x SINGLE_LINE_COMMENT MULTI_LINE_COMMENT
+
 /*
  * Define names for regular expressions here.
  */
+
 
 DARROW          =>
 
@@ -57,6 +52,17 @@ DARROW          =>
   *  Nested comments
   */
 
+\n				                  { curr_lineno++; }
+
+"--"			                  { BEGIN SINGLE_LINE_COMMENT; }
+"(\*"		                  	{ BEGIN MULTI_LINE_COMMENT; }
+
+<SINGLE_LINE_COMMENT>\n		  { BEGIN 0; curr_lineno++; }
+<MULTI_LINE_COMMENT>\n		  { curr_lineno++; }
+<MULTI_LINE_COMMENT>"\*)"	  { BEGIN 0; }
+
+<SINGLE_LINE_COMMENT>.			{}
+<MULTI_LINE_COMMENT>.		    {}
 
  /*
   *  The multiple-character operators.
