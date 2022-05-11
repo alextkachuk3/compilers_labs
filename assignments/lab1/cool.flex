@@ -26,6 +26,8 @@ extern int verbose_flag;
 
 extern YYSTYPE cool_yylval;
 
+int comment_nesting_counter = 0;
+
 %}
 
 %x SINGLE_LINE_COMMENT MULTI_LINE_COMMENT STRING
@@ -44,15 +46,18 @@ ASSIGN                      <-
   */
 
 "--"                        { BEGIN SINGLE_LINE_COMMENT; }
-"(\*"                       { BEGIN MULTI_LINE_COMMENT; }
+"(*"                        { BEGIN MULTI_LINE_COMMENT; }
 
 <SINGLE_LINE_COMMENT>\n     { BEGIN 0; curr_lineno++; }
-<MULTI_LINE_COMMENT>\n      { curr_lineno++; }
-<MULTI_LINE_COMMENT>"\*)"   { BEGIN 0; }
+<MULTI_LINE_COMMENT>"*)"    {
+                              comment_nesting_counter--;
+                              if(comment_nesting_counter) BEGIN 0;
+                            }
+<MULTI_LINE_COMMENT>"(*"    { comment_nesting_counter++; }
 
-"\*)"			{
-	strcpy(cool_yylval.error_msg, "Unmatched *)");
-	return (ERROR);
+"*)" {
+  strcpy(cool_yylval.error_msg, "Unmatched *)");
+  return (ERROR);
 }
 
 <SINGLE_LINE_COMMENT>.      {}
