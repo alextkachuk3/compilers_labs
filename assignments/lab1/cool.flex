@@ -48,11 +48,12 @@ DARROW          =>
 
 %%
 
+\n				                  { curr_lineno++; }
+[ \t]+                      {}
+
  /*
   *  Nested comments
   */
-
-\n				                  { curr_lineno++; }
 
 "--"			                  { BEGIN SINGLE_LINE_COMMENT; }
 "(\*"		                  	{ BEGIN MULTI_LINE_COMMENT; }

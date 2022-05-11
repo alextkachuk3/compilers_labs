@@ -11,10 +11,6 @@
 
 	% ./lexer foo.cl
 
-	To run your lexer on the file test.cl type:
-
-	% make dotest
-
 	If you change architectures you must issue
 
 	% make clean
