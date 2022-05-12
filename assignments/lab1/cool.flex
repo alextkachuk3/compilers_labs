@@ -45,6 +45,10 @@ ASSIGN                      <-
   *  Nested comments
   */
 
+"*)" {
+  cool_yylval.error_msg = "Unmatched *)";
+  return (ERROR);
+}
 "--"                        { BEGIN SINGLE_LINE_COMMENT; }
 "(*"                        {
                               BEGIN MULTI_LINE_COMMENT;
@@ -52,7 +56,7 @@ ASSIGN                      <-
                             }
 
 
-<SINGLE_LINE_COMMENT>\n     { BEGIN 0; curr_lineno++; }
+<SINGLE_LINE_COMMENT>\n     { BEGIN (INITIAL);; curr_lineno++; }
 <MULTI_LINE_COMMENT>"*)"    {
                               comment_nesting_counter--;                              
                               if(comment_nesting_counter == 0) {
@@ -62,14 +66,11 @@ ASSIGN                      <-
 <MULTI_LINE_COMMENT>"(*"    { comment_nesting_counter++; }
 <MULTI_LINE_COMMENT><<EOF>> {
 	                            strcpy(cool_yylval.error_msg, "EOF in comment");
-                              BEGIN 0;
+                              BEGIN (INITIAL);;
                               return (ERROR);
                             }
 
-"*)" {
-  strcpy(cool_yylval.error_msg, "Unmatched *)");
-  return (ERROR);
-}
+
 
 <SINGLE_LINE_COMMENT>.      {}
 <MULTI_LINE_COMMENT>.       {}
@@ -188,7 +189,6 @@ f[aA][lL][sS][eE] {
       if(*yytext == '\n') {
        BEGIN(INITIAL);
         curr_lineno++;
-        sprintf(string_buf, "Unterminated string constant");
         cool_yylval.error_msg = string_buf;
         return ERROR;
       }
@@ -196,7 +196,6 @@ f[aA][lL][sS][eE] {
     }
     if(string_buf_ptr == string_buf_end) {
       BEGIN(INITIAL);
-      sprintf(string_buf, "String constant too long");
       cool_yylval.error_msg = string_buf;
       return ERROR;
     }
@@ -209,7 +208,7 @@ f[aA][lL][sS][eE] {
 
 [[:space:]]+
 
-[0-9]+  {
+[0-9]*  {
   cool_yylval.symbol = inttable.add_string(yytext);
   return (INT_CONST);
 }
@@ -224,9 +223,10 @@ f[aA][lL][sS][eE] {
   return (OBJECTID);
 }
 
-.	{
-	strcpy(cool_yylval.error_msg, yytext); 
+. {
+	cool_yylval.error_msg = yytext; 
 	return (ERROR); 
 }
+
 
 %%
