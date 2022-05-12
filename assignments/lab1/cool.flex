@@ -190,7 +190,7 @@ f[aA][lL][sS][eE] {
       if(*yytext == '\n') {
        BEGIN(INITIAL);
         curr_lineno++;
-        cool_yylval.error_msg = string_buf;
+        cool_yylval.error_msg = "Unterminated string constant";
         return ERROR;
       }
       *string_buf_ptr++ = *yytext++;
@@ -202,7 +202,6 @@ f[aA][lL][sS][eE] {
     }
   }
   BEGIN(INITIAL);
-  sprintf(string_buf, "String contains null character.");
   cool_yylval.error_msg = string_buf;
   return ERROR;
 }
