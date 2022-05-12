@@ -100,7 +100,6 @@ ASSIGN                      <-
 "-"                         { return '-'; }
 "*"                         { return '*'; }
 "/"                         { return '/'; }
-"%"                         { return '%'; }
 "."                         { return '.'; }
 "<"                         { return '<'; }
 "="                         { return '='; }
