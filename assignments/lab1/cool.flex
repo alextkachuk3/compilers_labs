@@ -18,7 +18,7 @@ extern FILE *fin;
     YY_FATAL_ERROR( "read() in flex scanner failed");
 
 char string_buf[MAX_STR_CONST];
-char *string_buf_end;
+char *string_buf_end = string_buf + MAX_STR_CONST;
 char *string_buf_ptr;
 
 extern int curr_lineno;
@@ -141,7 +141,6 @@ f[aA][lL][sS][eE] {
 \"  { 
   BEGIN(STRING);
   string_buf_ptr = string_buf;
-  string_buf_end = string_buf + MAX_STR_CONST;
 }
 
 <STRING>(([^\"\n\\]*)(\\(.|\n))?)*[\\]?[\"\n]?  {
