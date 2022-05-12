@@ -14,8 +14,8 @@ extern FILE *fin;
 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) \
-	if ( (result = fread( (char*)buf, sizeof(char), max_size, fin)) < 0) \
-		YY_FATAL_ERROR( "read() in flex scanner failed");
+  if ( (result = fread( (char*)buf, sizeof(char), max_size, fin)) < 0) \
+    YY_FATAL_ERROR( "read() in flex scanner failed");
 
 char string_buf[MAX_STR_CONST];
 char *string_buf_end;
@@ -42,7 +42,7 @@ ASSIGN                      <-
 [ \t]+                      {}
 
  /*
-  *  Nested comments
+  *  Comments
   */
 
 "*)" {
@@ -54,7 +54,6 @@ ASSIGN                      <-
                               BEGIN MULTI_LINE_COMMENT;
                               comment_nesting_counter++;
                             }
-
 
 <SINGLE_LINE_COMMENT>\n     { BEGIN (INITIAL); curr_lineno++; }
 <MULTI_LINE_COMMENT>\n      { curr_lineno++; }
@@ -70,8 +69,6 @@ ASSIGN                      <-
                               BEGIN (INITIAL);
                               return (ERROR);
                             }
-
-
 
 <SINGLE_LINE_COMMENT>.      {}
 <MULTI_LINE_COMMENT>.       {}
@@ -138,10 +135,7 @@ f[aA][lL][sS][eE] {
 }
 
  /*
-  *  String constants (C syntax)
-  *  Escape sequence \c is accepted for all characters c. Except for 
-  *  \n \t \b \f, the result is c.
-  *
+  *  String constants
   */
 
 \"  { 
