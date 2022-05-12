@@ -56,7 +56,7 @@ ASSIGN                      <-
                             }
 
 
-<SINGLE_LINE_COMMENT>\n     { BEGIN (INITIAL);; curr_lineno++; }
+<SINGLE_LINE_COMMENT>\n     { BEGIN (INITIAL); curr_lineno++; }
 <MULTI_LINE_COMMENT>"*)"    {
                               comment_nesting_counter--;                              
                               if(comment_nesting_counter == 0) {
@@ -65,8 +65,8 @@ ASSIGN                      <-
                             }
 <MULTI_LINE_COMMENT>"(*"    { comment_nesting_counter++; }
 <MULTI_LINE_COMMENT><<EOF>> {
-	                            strcpy(cool_yylval.error_msg, "EOF in comment");
-                              BEGIN (INITIAL);;
+	                            cool_yylval.error_msg = "EOF in comment";
+                              BEGIN (INITIAL);
                               return (ERROR);
                             }
 
