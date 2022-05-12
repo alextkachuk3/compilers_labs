@@ -57,6 +57,7 @@ ASSIGN                      <-
 
 
 <SINGLE_LINE_COMMENT>\n     { BEGIN (INITIAL); curr_lineno++; }
+<MULTI_LINE_COMMENT>\n      { curr_lineno++; }
 <MULTI_LINE_COMMENT>"*)"    {
                               comment_nesting_counter--;                              
                               if(comment_nesting_counter == 0) {
