@@ -1,0 +1,36 @@
+	To compile your parser program type:
+
+	% make parser
+
+	This produces an executable named "parser" which is standalone
+	phase of the Cool compiler.  It requires lexer, semant, and cgen
+	to do anything useful.
+
+	To test your parser on a file 'foo.cl' type
+
+	% myparser foo.cl
+
+	myparser is a shell script that "glues" together lexer and
+	parser using pipes.
+
+	To run your parser on the files good.cl and bad.cl type:
+
+	% make dotest
+
+	To run the (provided) lexer and your parser on a file called test.cl type:
+
+	% ./lexer test.cl | ./parser
+
+	If you think your parser is correct and behaves like
+	the one we wrote, you may want to run a COOL compiler using
+	your parser:
+
+	% mycoolc foo.cl
+
+	To overwrite the default lexical analyzer with yours, replace 
+	lexer (which is a symbolic link to the "official" lexer) with
+        your lexer from PA2.
+
+	If you change architectures you must issue
+
+	% make clean
