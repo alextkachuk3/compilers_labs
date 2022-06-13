@@ -35,3 +35,6 @@ assignments/lab1/lexer
 assignments/lab1/grading/
 assignments/lab2/grading/
 assignments/lab2/parser
+assignments/lab2/cool-parse.cc
+assignments/lab2/cool.tab.h
+assignments/lab2/cool.output
