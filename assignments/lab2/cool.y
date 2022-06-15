@@ -140,6 +140,9 @@
     %type <expressions> expression_list
     %type <expressions> brace_expression_list
     %type <expression> let_expression
+    %type <formal> formal
+    %type <formals> formal_list
+    %type <formals> nonempty_formal_list
     
     /* Precedence declarations go here. */
 
@@ -185,14 +188,39 @@
     feature	
     : OBJECTID '(' ')' ':' TYPEID '{' expression '}' ';'
                                                   { $$ = method($1, nil_Formals(), $5, $7);}
+    | OBJECTID '(' formal formal_list ')' ':' TYPEID '{' expression '}' ';'	
+                                                  { $$ = method($1, append_Formals(single_Formals($3),$4), $7, $9);}
     | OBJECTID ':' TYPEID ';'                     { $$ = attr($1, $3, no_expr()); }
     | OBJECTID ':' TYPEID ASSIGN expression ';'   { $$ = attr($1, $3, $5); }
     
     | OBJECTID ':' error ';'                      { yyclearin; $$=NULL; }
+    | OBJECTID '(' formal formal_list ')' ':' TYPEID '{' error '}' ';'	
+                                                  { yyclearin; $$=NULL; }
     | OBJECTID '(' ')' ':' TYPEID '{' error '}' ';'
                                                   { yyclearin; $$=NULL; }
     | OBJECTID '(' error ')' ':' TYPEID '{' expression '}' ';'
                                                   { yyclearin; $$=NULL; }
+    | OBJECTID '(' error formal_list ')' ':' TYPEID '{' expression '}' ';'
+                                                  { yyclearin; $$=NULL; }
+    ;
+
+    formal_list
+    :
+    nonempty_formal_list                          { $$ = $1; }
+    | formal_list ',' formal                      { $$ = append_Formals($1, single_Formals($3)); }
+    | { $$ = nil_Formals(); }
+    ;
+
+    nonempty_formal_list : formal ',' nonempty_formal_list
+                     { $$ = append_Formals(single_Formals($1), $3); }
+
+                     | formal
+                     { $$ = single_Formals($1); }
+
+                     ;
+
+    formal
+    :	OBJECTID ':' TYPEID                         { $$ = formal($1, $3); }
     ;
     
     expression
