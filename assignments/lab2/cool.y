@@ -130,44 +130,144 @@
     documentation for details). */
     
     /* Declare types for the grammar's non-terminals. */
-    %type <program> program
-    %type <classes> class_list
     %type <class_> class
-    
-    /* You will want to change the following line. */
-    %type <features> dummy_feature_list
+    %type <classes> class_list
+    %type <feature> feature
+    %type <features> feature_list
+    %type <case_> case_expression
+    %type <cases> case_expression_list
+    %type <expression> expression
+    %type <expressions> expression_list
+    %type <expressions> brace_expression_list
+    %type <expression> let_expression
     
     /* Precedence declarations go here. */
-    
+
+    %nonassoc         IN
+    %right            ASSIGN
+    %left             NOT
+    %nonassoc         '<' LE '='
+    %left             '+' '-'
+    %left             '*' '/'
+    %left             ISVOID
+    %left             '~' 
+    %left             '@'
+    %left             '.'    
     
     %%
     /* 
     Save the root of the abstract syntax tree in a global variable.
     */
-    program	: class_list	{ @$ = @1; ast_root = program($1); }
+    program : class_list                          { @$ = @1;
+                                                    ast_root = program($1); }
     ;
     
     class_list
-    : class			/* single class */
-    { $$ = single_Classes($1);
-    parse_results = $$; }
-    | class_list class	/* several classes */
-    { $$ = append_Classes($1,single_Classes($2)); 
-    parse_results = $$; }
+    : class                                       { $$ = single_Classes($1); 
+                                                    parse_results = $$; }
+    | class_list class                            { $$ = append_Classes($1,single_Classes($2));
+                                                    parse_results = $$; }
+    ;
+
+    class
+    : CLASS TYPEID '{' feature_list '}' ';'       { $$ = class_($2,idtable.add_string("Object"),$4,
+                                                    stringtable.add_string(curr_filename)); }
+    | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';'
+                                                  { $$ = class_($2,$4,$6,stringtable.add_string(curr_filename)); }
+    | error                                       { yyclearin; $$=NULL; }
+    ;
+
+    feature_list
+    :                                             { $$ = nil_Features(); }
+    | feature_list feature                        { $$ = append_Features($1, single_Features($2)); }
     ;
     
-    /* If no parent is specified, the class inherits from the Object class. */
-    class	: CLASS TYPEID '{' dummy_feature_list '}' ';'
-    { $$ = class_($2,idtable.add_string("Object"),$4,
-    stringtable.add_string(curr_filename)); }
-    | CLASS TYPEID INHERITS TYPEID '{' dummy_feature_list '}' ';'
-    { $$ = class_($2,$4,$6,stringtable.add_string(curr_filename)); }
+    feature	
+    : OBJECTID '(' ')' ':' TYPEID '{' expression '}' ';'
+                                                  { $$ = method($1, nil_Formals(), $5, $7);}
+    | OBJECTID ':' TYPEID ';'                     { $$ = attr($1, $3, no_expr()); }
+    | OBJECTID ':' TYPEID ASSIGN expression ';'   { $$ = attr($1, $3, $5); }
+    
+    | OBJECTID ':' error ';'                      { yyclearin; $$=NULL; }
+    | OBJECTID '(' ')' ':' TYPEID '{' error '}' ';'
+                                                  { yyclearin; $$=NULL; }
+    | OBJECTID '(' error ')' ':' TYPEID '{' expression '}' ';'
+                                                  { yyclearin; $$=NULL; }
     ;
     
-    /* Feature list may be empty, but no empty features in list. */
-    dummy_feature_list:		/* empty */
-    {  $$ = nil_Features(); }
+    expression
+    : BOOL_CONST                                  { $$ = bool_const($1); }
+    | INT_CONST                                   { $$ = int_const($1); }
+    | STR_CONST                                   { $$ = string_const($1); }    
+    | OBJECTID                                    { $$ = object($1); }
+    | expression '+' expression                   { $$ = plus($1, $3); }
+    | expression '-' expression                   { $$ = sub($1, $3); }
+    | expression '*' expression                   { $$ = mul($1, $3); }
+    | expression '/' expression                   { $$ = divide($1, $3); }
+    | '(' expression ')'                          { $$ = $2; }
+    | NOT expression                              { $$ = comp($2); }
+    | expression '=' expression                   { $$ = eq($1, $3); }
+    | expression LE expression                    { $$ = leq($1, $3); }
+    | expression '<' expression                   { $$ = lt($1, $3); }
+    | '~' expression                              { $$ = neg($2); }
+    | NEW TYPEID                                  { $$ = new_($2); }
+    | ISVOID expression                           { $$ = isvoid($2); }
+    | WHILE expression LOOP expression POOL       { $$ = loop($2, $4); }
+    | IF expression THEN expression ELSE expression FI
+                                                  { $$ = cond($2, $4, $6); }
+    | OBJECTID ASSIGN expression                  { $$ = assign($1, $3); }
+    | expression '.' OBJECTID '(' ')'             { $$ = dispatch($1, $3, nil_Expressions()); }
+    | expression '.' OBJECTID '(' expression expression_list ')'
+                                                  { $$ = dispatch($1, $3, 
+                                                    append_Expressions(single_Expressions($5), $6)); }
+    | expression '@' TYPEID '.' OBJECTID '(' ')'  { $$ = static_dispatch($1, $3, $5, nil_Expressions()); }
+    | expression '@' TYPEID '.' OBJECTID '(' expression expression_list ')'
+                                                  { $$ = static_dispatch($1, $3, $5,
+                                                    append_Expressions(single_Expressions($7), $8)); }
+    | OBJECTID '(' ')'
+                                                  { $$ = dispatch(object(idtable.add_string("self")),$1, 
+                                                    nil_Expressions()); }
+    | OBJECTID '(' expression expression_list ')' { $$ = dispatch(object(idtable.add_string("self")), $1,
+                                                    append_Expressions($4, single_Expressions($3))); }
+    | '{' expression ';' brace_expression_list '}'
+                                                  { $$ = block(append_Expressions(single_Expressions($2), $4)); }
+    | CASE expression OF case_expression case_expression_list ESAC
+                                                  { $$ = typcase($2, append_Cases(single_Cases($4), $5)); }
+    | LET let_expression                          { $$ = $2; }
     
+    | '{' error ';' brace_expression_list '}'     { yyclearin; $$=NULL; }		
+    ;
+
+    expression_list
+    :                                             { $$ = nil_Expressions(); }
+    | expression_list ',' expression              { $$ = append_Expressions($1, single_Expressions($3)); }							
+    ;
+    
+    
+    brace_expression_list
+    :                                             { $$ = nil_Expressions(); }
+    | brace_expression_list expression ';'        { $$ = append_Expressions($1, single_Expressions($2)); }
+    ;
+    
+    case_expression
+    : OBJECTID ':' TYPEID DARROW expression ';'   { $$ = branch($1, $3, $5); }
+    ;
+    
+    case_expression_list
+    :                                             { $$ = nil_Cases(); }
+    | case_expression_list case_expression        { $$ = append_Cases($1, single_Cases($2)); }
+    ;
+    
+    let_expression
+    : OBJECTID ':' TYPEID IN expression           { $$ = let($1, $3, no_expr(), $5); }
+    | OBJECTID ':' TYPEID ',' let_expression      { $$ = let($1, $3, no_expr(), $5); }
+    | OBJECTID ':' TYPEID ASSIGN expression IN expression
+                                                  { $$ = let($1, $3, $5, $7); }
+    | OBJECTID ':' TYPEID ASSIGN expression ',' let_expression
+                                                  { $$ = let($1, $3, $5, $7); }
+    
+    | OBJECTID error IN expression                { yyclearin; $$=NULL; }
+    ;
     
     /* end of grammar */
     %%
